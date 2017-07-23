@@ -3,7 +3,10 @@
 
 using namespace std;
 
-CoreSERVER::CoreSERVER()
+CoreSERVER::CoreSERVER(boost::asio::io_service& io_service,
+      const tcp::endpoint& endpoint)
+    : acceptor_(io_service, endpoint),
+      socket_(io_service)
 {
 	try
 	{
@@ -19,25 +22,23 @@ void CoreSERVER::Listen()
 {
 	CLogger::GetLogger()->Log("HomeOn.Central CoreServer listening ON port %d ...", CORESERVER_TCP_PORT);
 
-	boost::asio::io_service io_service;
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), (unsigned short)CORESERVER_TCP_PORT);
-	boost::asio::ip::tcp::acceptor acceptor(io_service, endpoint);
-
-	while (true)
+	try
 	{
-		try
-		{
-			boost::asio::ip::tcp::socket socket(io_service);
-			acceptor.accept(socket, endpoint);
-			
-			CSClient* client = new CSClient(&socket);
-			/*client->SendWelcome();
-			client->SendPing();*/
-			client->CloseClient();
-		}
-		catch (boost::system::system_error const& e)
-		{
-			std::cout << "Warning: could not connect : " << e.what() << std::endl;
-		}
+		acceptor_.async_accept(socket_,
+			[this](boost::system::error_code ec)
+			{
+			  if (!ec)
+			  {
+				std::make_shared<CSClient>(std::move(socket_))->start();
+			  }
+			  else
+				  std::cout << "Error";
+
+			  Listen();
+			});
+	}
+	catch (boost::system::system_error const& e)
+	{
+		std::cout << "Warning: could not connect : " << e.what() << std::endl;
 	}
 }

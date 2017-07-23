@@ -44,7 +44,7 @@ void CLogger::Log(const char * format, ...)
 	m_Logfile << Util::CurrentDateTime() << ":\t";
 	m_Logfile << sMessage << "\n";
 
-	cout << Util::CurrentDateTime() << ":\t";
+	//cout << Util::CurrentDateTime() << ":\t" << sMessage << endl;
 	cout << sMessage << endl;
 
 	va_end(args);

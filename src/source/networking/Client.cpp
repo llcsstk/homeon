@@ -1,17 +1,76 @@
 #include "../../headers/networking/Client.h"
 #include "../../headers/logging/Logger.h"
 
-CSClient::CSClient(boost::asio::ip::tcp::socket *csock_)
+CSClient::CSClient(tcp::socket socket)
+    : socket_(std::move(socket))
 {
-	cinfo = (CSClientConnectionInfo*)malloc(sizeof(CSClientConnectionInfo));
-	cinfo->ip = csock_->remote_endpoint().address().to_string();
+	/*cinfo = new cs_c_info();
+	cinfo->ip_address = csock_->remote_endpoint().address().to_string();
 	cinfo->csock = csock_;
+	
+	cinfo->csock->async_read_some(boost::asio::buffer(recv_buffer, 512), boost::bind(&CSClient::handle_receive, shared_from_this(),
+		boost::asio::placeholders::error,
+		boost::asio::placeholders::bytes_transferred));*/
 
-	CLogger::GetLogger()->Log("Client connected %s", cinfo->ip.c_str());
+	CLogger::GetLogger()->Log("Client connected ");
+	//CLogger::GetLogger()->Log("Client connected %s", cinfo->ip_address.c_str());
+
 }
 
-void CSClient::write_handler(const boost::system::system_error & ec, std::size_t bytes_transferred)
+void CSClient::start()
 {
+	auto self(shared_from_this());
+	
+	boost::asio::async_read(socket_,
+        boost::asio::buffer(recv_buffer),
+		boost::asio::transfer_at_least(1),
+        [this, self](boost::system::error_code ec, std::size_t)
+        {
+          if (!ec)
+          {
+			  std::cout << "sending response " << std::endl;
+			send_result(recv_buffer[1]);
+          }
+          else
+          {
+            std::cout << "Error reading data; Code: " << ec << std::endl;
+          }
+        });
+}
+
+void CSClient::send_result(char value)
+{
+	char result[1];
+	result[0] = (char) ((int) value) * 2;
+	
+    auto self(shared_from_this());
+    boost::asio::async_write(socket_,
+        boost::asio::buffer(result,
+          sizeof(result)),
+        [this, self](boost::system::error_code ec, std::size_t )
+        {
+          if (!ec)
+          {
+			std::cout << "send successfully" << std::endl; 
+          }
+          else
+          {
+            std::cout << "error sending" << std::endl;
+          }
+        });
+  }
+
+void CSClient::handle_receive(const boost::system::error_code error, size_t bytes_transferred)
+{
+	if(!error)
+	{
+	    std::cout << "ulala" << std::endl;
+		std::cout << "Received: '" << std::string(recv_buffer.begin(), recv_buffer.begin()+bytes_transferred) << "'\n";	
+	}
+	else
+	{
+		std::cout << "error" << std::endl;
+	}
 }
 
 /*void CSClient::SendWelcome()
@@ -36,11 +95,12 @@ void CSClient::write_handler(const boost::system::system_error & ec, std::size_t
 
 void CSClient::CloseClient()
 {
-	CLogger::GetLogger()->Log("Terminating existing client with ip %s", cinfo->ip.c_str());
-	cinfo->csock->close();
+	//CLogger::GetLogger()->Log("Terminating existing client with ip %s", cinfo->ip_address.c_str());
+	//cinfo->csock->close();
+	socket_.close();
 
 	//free memory alloc struct
-	free(cinfo);
+	//delete cinfo;
 }
 
 void CSClient::SendStrangePacket()

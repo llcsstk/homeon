@@ -7,22 +7,29 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
 
+using boost::asio::ip::tcp;
+
 typedef struct cs_c_info
 {
 	boost::asio::ip::tcp::socket *csock;
-	std::string ip;
-	unsigned long conn_timestamp;
-	unsigned long last_request;
+	boost::asio::ip::tcp::endpoint endpoint;
+	std::string ip_address;
+	//unsigned long conn_timestamp;
+	//unsigned long last_request;
 } CSClientConnectionInfo;
 
-class CSClient
+class CSClient :
+	public std::enable_shared_from_this<CSClient>
 {
 private:
-	CSClientConnectionInfo *cinfo;
-
+	tcp::socket socket_;
+	CSClientConnectionInfo* cinfo;
+	std::array<char, 1024> recv_buffer;
 public:
-	CSClient(boost::asio::ip::tcp::socket *csock_);
-	void write_handler(const boost::system::system_error& ec, std::size_t bytes_transferred);
+	CSClient(tcp::socket socket);
+	void handle_receive(const boost::system::error_code error, size_t bytes_transferred);
+	void start();
+	void send_result(char value);
 	void SendWelcome();
 	void CloseClient();
 	void SendStrangePacket();
@@ -30,3 +37,5 @@ public:
 };
 
 #endif // !CSClient
+
+typedef boost::shared_ptr<CSClient> client_session_ptr;
