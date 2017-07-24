@@ -7,7 +7,7 @@ ofstream CLogger::m_Logfile;
 
 CLogger::CLogger()
 {
-
+	log_console_enabled = true;
 }
 
 CLogger* CLogger::GetLogger()
@@ -44,8 +44,11 @@ void CLogger::Log(const char * format, ...)
 	m_Logfile << Util::CurrentDateTime() << ":\t";
 	m_Logfile << sMessage << "\n";
 
-	//cout << Util::CurrentDateTime() << ":\t" << sMessage << endl;
-	cout << sMessage << endl;
+	if(log_console_enabled)
+	{
+		//cout << Util::CurrentDateTime() << ":\t" << sMessage << endl;
+		cout << sMessage << endl;
+	}
 
 	va_end(args);
 

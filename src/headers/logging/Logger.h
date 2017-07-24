@@ -35,6 +35,11 @@ public:
 	*   @return singleton object of Clogger class..
 	*/
 	static CLogger* GetLogger();
+	
+	/**
+	* Enable or disable cout
+	*/ 
+	bool log_console_enabled;
 private:
 	/**
 	*    Default constructor for the Logger class.

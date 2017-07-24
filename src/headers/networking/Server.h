@@ -5,8 +5,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <set>
 #include "../logging/Logger.h"
 #include "Client.h"
+#include "ClientManager.h"
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
@@ -20,10 +22,11 @@ class CoreSERVER
 private:
 	tcp::acceptor acceptor_;
 	tcp::socket socket_;
+	void RegisterClient(std::shared_ptr<CSClient> client);
+	void Listen();
 public:
 	CoreSERVER(boost::asio::io_service& io_service, const boost::asio::ip::tcp::endpoint& endpoint);
-	void Listen();
-	void handle_accept(CSClient* session, const boost::system::error_code& error);
+	void Start();
 };
 
 #endif // !CORE_SERVER
