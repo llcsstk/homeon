@@ -1,8 +1,23 @@
 #include "../headers/networking/Server.h"
+#include "../headers/database/connector.h"
+#include "../headers/crow.h"
 
 #include <boost/thread.hpp>
 #include <thread>
 #include <string.h>
+
+void start_web()
+{
+	crow::logger::setLogLevel(crow::LogLevel::CRITICAL);
+	crow::SimpleApp app;
+	
+	CROW_ROUTE(app, "/")
+    ([]() {
+        return "Hello world!";
+    });
+	
+	app.port(18080).multithreaded().run();
+}
 
 int main()
 {
@@ -16,6 +31,11 @@ int main()
 	
 	boost::thread thread(boost::bind(&boost::asio::io_service::run, &srv));
 	thread.detach();
+	
+	std::thread web_t(start_web);
+	web_t.detach();
+	
+	testeDatabase();
 	
 	while(true)
 	{
