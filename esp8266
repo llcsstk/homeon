@@ -6,22 +6,33 @@
 #define HOMEON_CENTRAL_HOST "192.168.0.107"
 #define HOMEON_CENTRAL_PORT 1500
 
+#define SERVER_WELCOME_PACKET 0x0001
+#define SERVER_PING_PACKET 0x00FE
+
+#define SERVER_SIMPLE_ACTION_PACKET 0x00C8
+
+#define CLIENT_WELCOME_PACKET 0x0001
+#define CLIENT_PONG_PACKET 0x00FE
+
 WiFiClient client;
+
+uint16_t ESP_ID = 0xAAFF;
 
 void setup()
 {
   Serial.begin(9600);
-  // Connect to WiFi access point.
-  Serial.println(); Serial.println();
+  
   Serial.print("Connecting to ");
   Serial.println(WLAN_SSID);
   
   WiFi.begin(WLAN_SSID, WLAN_PASS);
+  
   while (WiFi.status() != WL_CONNECTED) 
   {
     delay(200);
     Serial.print(".");
   }
+  
   Serial.println();
   Serial.println("Connected!");
   Serial.println("ESP8266 Network Config ");
@@ -32,44 +43,103 @@ void setup()
 
 void loop() 
 {
-  Serial.print("Connecting to server");
-  
-  while (!client.connect(HOMEON_CENTRAL_HOST, HOMEON_CENTRAL_PORT)) 
+  if(!client.connected())
   {
-    delay(500);
-    Serial.print(".");
-    yield();
-  }
-  
-  Serial.println();
-  Serial.print("Conected to IP: ");
-  Serial.println(HOMEON_CENTRAL_HOST);
+    Serial.print("Connecting to server");
+    while (!client.connect(HOMEON_CENTRAL_HOST, HOMEON_CENTRAL_PORT)) 
+    {
+      delay(500);
+      yield();
+    }
+    Serial.println();
+    Serial.print("Conected to IP: ");
+    Serial.println(HOMEON_CENTRAL_HOST);
 
+    delay(3000);
+    send_welcome_packet();
+  }
+ 
   delay(1000);
-  Serial.println("Sending Write test");
-  client.flush();
-  
-  char message[3]; 
-  message[0]='5';
-  message[1]='7';
-  message[2]='8';
-  
-  client.write((const uint8_t*)message, sizeof(message));
-  client.flush();
 
   while(client.connected())
   {
-    if(client.available())
+    byte recv_buffer[512];
+    int size_buffer = 0;
+    
+    while(client.available())
     {
-      char response = client.read();
-  
-      Serial.println(response);
+      byte response = client.read();
+      recv_buffer[size_buffer] = response;
+      size_buffer++;
+    }
+
+    if(size_buffer > 0)
+    {
+      byte* packet = new byte[size_buffer];
+      memcpy(packet, recv_buffer, size_buffer);
+
+      handle_packet(packet);
     }
   }
 
-  Serial.println("Fim");
   client.stop();
 
   delay(5000);
 }
 
+void handle_packet(byte* packet)
+{
+  switch(packet[0x0004])
+  {
+    case SERVER_WELCOME_PACKET:
+      //Serial.println("Received a Welcome Back Packet from Server.");
+      break;
+    case SERVER_PING_PACKET:
+      send_pong_packet();
+      break;
+    case SERVER_SIMPLE_ACTION_PACKET:
+      handle_simple_action_packet(packet);
+      break;
+    default:
+      Serial.print("Received a unknow packet from server ");
+      Serial.println(packet[0x04]);
+      break;
+  }
+}
+
+void make_header(uint8_t* packet)
+{
+  packet[0x00] = (uint8_t)((ESP_ID & 0xFF00) >> 8);
+  packet[0x01] = (uint8_t)(ESP_ID & 0x00FF);
+  packet[0x02] = 0x00;
+  packet[0x03] = 0x00;
+}
+
+void send_welcome_packet()
+{
+  //Serial.println("Sending Welcome Packet to Server");
+  uint8_t welcome_packet[0x0005];
+  make_header(welcome_packet);
+  welcome_packet[0x04] = 0x01;
+
+  client.write((const uint8_t*)welcome_packet, sizeof(welcome_packet));
+  client.flush();
+  //Serial.println("Sent!");
+}
+
+
+void send_pong_packet()
+{
+  uint8_t pong_packet[0x0005];
+  make_header(pong_packet);
+  pong_packet[0x04] = (uint8_t) CLIENT_PONG_PACKET;
+
+  client.write((const uint8_t*)pong_packet, sizeof(pong_packet));
+  client.flush();
+}
+
+void handle_simple_action_packet(byte* packet)
+{
+  Serial.print("Received a simple action packet with value ");
+  Serial.println(packet[0x0005]);
+}
