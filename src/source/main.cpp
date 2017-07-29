@@ -1,23 +1,76 @@
 #include "../headers/networking/Server.h"
-#include "../headers/database/connector.h"
-#include "../headers/crow.h"
+#include "../headers/mweb/WebRouter.h"
+#include "../headers/database/mysql_manager.h"
+
+
+/*#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"*/
 
 #include <boost/thread.hpp>
 #include <thread>
 #include <string.h>
 
-void start_web()
+//namespace json = rapidjson;
+
+/*void start_web()
 {
 	crow::logger::setLogLevel(crow::LogLevel::CRITICAL);
 	crow::SimpleApp app;
 	
 	CROW_ROUTE(app, "/")
-    ([]() {
-        return "Hello world!";
+    ([](const crow::request&, crow::response& response_) {
+			sql::Connection *con = MySQLConnector::getManager()->getConnection();
+			sql::Statement *stmt;
+			sql::ResultSet *res;
+	  
+			json::StringBuffer buffer;
+			json::Writer<json::StringBuffer> writer(buffer);
+			
+			con->setSchema("homeon");
+
+			stmt = con->createStatement();
+			res = stmt->executeQuery("SELECT * FROM SENSOR"); // replace with your statement
+			
+			writer.StartArray();
+			while (res->next()) 
+			{
+				writer.StartObject();
+				writer.Key("nome");
+				writer.String(res->getString("nome").c_str());
+				writer.EndObject();
+			}
+			writer.EndArray();
+			
+			delete res;
+			delete stmt;
+			delete con;
+			
+			response_.set_header("Content-Type", "application/json");
+			response_.set_header("Server", "HomeOn/0.1 (Crow)");
+			response_.write(buffer.GetString());
+			response_.end();
     });
 	
 	app.port(18080).multithreaded().run();
-}
+}*/
+
+/*void testDatabase()
+{
+	try 
+	{
+
+
+	} 
+	catch (sql::SQLException &e) 
+	{
+	  cout << "# ERR: SQLException in " << __FILE__;
+	  cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	  cout << "# ERR: " << e.what();
+	  cout << " (MySQL error code: " << e.getErrorCode();
+	  cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+
+}*/
 
 int main()
 {
@@ -32,10 +85,11 @@ int main()
 	boost::thread thread(boost::bind(&boost::asio::io_service::run, &srv));
 	thread.detach();
 	
-	std::thread web_t(start_web);
-	web_t.detach();
+	WebRouter* router = new WebRouter();
+	router->Start();
 	
-	testeDatabase();
+	
+	/*testDatabase();*/
 	
 	while(true)
 	{
