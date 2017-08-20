@@ -88,7 +88,6 @@ int main()
 	WebRouter* router = new WebRouter();
 	router->Start();
 	
-	
 	/*testDatabase();*/
 	
 	while(true)
