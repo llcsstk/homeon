@@ -8,6 +8,7 @@ class WebRouter
 private:
 	crow::SimpleApp app;
 	void start_app();
+	void RegisterLogin();
 	void registerSensorRoute();
 	void RegisterActualTemperature();
 	void RegisterSensorAction();

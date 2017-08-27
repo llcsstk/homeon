@@ -1,11 +1,14 @@
 #include "src/headers/mweb/WebRouter.h"
 #include "src/headers/database/dao/DAOSensores.h"
+#include "src/headers/database/dao/DAOUsuarios.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
 #include "src/headers/sensores/SensorManager.h"
+
 #include "src/headers/json/serializer/SensorSerializer.h"
+#include "src/headers/json/serializer/UsuarioSerializer.h"
 
 #include <thread>
 
@@ -25,6 +28,7 @@ WebRouter::WebRouter()
 
 void WebRouter::start_app()
 {
+	RegisterLogin();
 	registerSensorRoute();
 	RegisterActualTemperature();
 	RegisterSensorAction();
@@ -82,6 +86,44 @@ void WebRouter::RegisterSensorAction()
 	});
 }
 
+void WebRouter::RegisterLogin()
+{
+	CROW_ROUTE(app, "/login")
+	.methods("POST"_method)
+	([&](const crow::request& req, crow::response& response_) 
+	{
+		auto x = crow::json::load(req.body);
+		
+		if (!x)
+		{
+			response_.end();
+			return;
+		}
+			
+		std::string login = x["login"].s();
+		std::string passwd = x["passwd"].s();
+		
+		Usuario* usr = DAOUsuario::GetDAO()->Login(login, passwd);
+		
+		if(usr == NULL)
+		{
+			WebRouter::RegisterResponse(&response_);
+			response_.write("401 Unauthorized");
+			response_.end();
+			return;
+		}
+		
+		json::StringBuffer buffer;
+		json::Writer<json::StringBuffer> writer(buffer);
+		
+		serialize(&writer, usr);
+		
+		WebRouter::RegisterResponse(&response_);
+		response_.write(buffer.GetString());
+		response_.end();
+	});
+}
+
 void WebRouter::registerSensorRoute()
 {
 	CROW_ROUTE(app, "/sensores")
@@ -104,7 +146,6 @@ void WebRouter::registerSensorRoute()
 		serializeList(&writer, m_Sensores);
 		
 		WebRouter::RegisterResponse(&response_);
-		//response_.write("{\n	{\n		codigo:1\n		nome:'Sensor Teste',\n		situacao:1\n	}\n}");
 		response_.write(buffer.GetString());
 		response_.end();
 	});
