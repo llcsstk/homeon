@@ -1,9 +1,12 @@
 #include <ESP8266WiFi.h>
 
+//#define WLAN_SSID "Rodrigo Zanão"
+//#define WLAN_PASS "rodrigozanao1"
+
 #define WLAN_SSID "WiFi LCS."
 #define WLAN_PASS "12345678"
 
-#define HOMEON_CENTRAL_HOST "192.168.0.107"
+#define HOMEON_CENTRAL_HOST "192.168.0.104"
 #define HOMEON_CENTRAL_PORT 1500
 
 #define SERVER_WELCOME_PACKET 0x0001
@@ -143,3 +146,4 @@ void handle_simple_action_packet(byte* packet)
   Serial.print("Received a simple action packet with value ");
   Serial.println(packet[0x0005]);
 }
+
