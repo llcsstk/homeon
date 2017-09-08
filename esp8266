@@ -1,12 +1,11 @@
+#include "DHT.h"
+#include <Adafruit_Sensor.h>
 #include <ESP8266WiFi.h>
-
-//#define WLAN_SSID "Rodrigo Zanão"
-//#define WLAN_PASS "rodrigozanao1"
 
 #define WLAN_SSID "WiFi LCS."
 #define WLAN_PASS "12345678"
 
-#define HOMEON_CENTRAL_HOST "192.168.0.104"
+#define HOMEON_CENTRAL_HOST "192.168.43.250"
 #define HOMEON_CENTRAL_PORT 1500
 
 #define SERVER_WELCOME_PACKET 0x0001
@@ -17,14 +16,22 @@
 #define CLIENT_WELCOME_PACKET 0x0001
 #define CLIENT_PONG_PACKET 0x00FE
 
+#define LDR_PIN     A0
+#define DHT_PIN     D1
+#define BUZZER_PIN  D2
+
+#define DHT_TYPE DHT11
+ 
+DHT dht(DHT_PIN, DHT_TYPE);
 WiFiClient client;
 
 uint16_t ESP_ID = 0xAAFF;
 
 void setup()
 {
+  pinMode(BUZZER_PIN, OUTPUT);
   Serial.begin(9600);
-  
+
   Serial.print("Connecting to ");
   Serial.println(WLAN_SSID);
   
@@ -39,13 +46,42 @@ void setup()
   Serial.println();
   Serial.println("Connected!");
   Serial.println("ESP8266 Network Config ");
-  Serial.println(" IP - " + WiFi.localIP());
+  Serial.print("IP - ");
+  Serial.println(WiFi.localIP());
   Serial.println();
   Serial.println();
+
+  dht.begin();
 }
 
 void loop() 
 {
+  /*digitalWrite(BUZZER_PIN, HIGH);
+  Serial.println("HIGH");
+  delay(1000);
+  digitalWrite(BUZZER_PIN, LOW);
+  Serial.println("LOW");
+  delay(1000);*/
+
+  int ldrValor = analogRead(LDR_PIN);
+  
+  float umidade = dht.readHumidity();
+  float temperatura = dht.readTemperature();
+ 
+  //Se não for um numero retorna erro de leitura
+  if (isnan(umidade) || isnan(temperatura)) 
+  {
+    Serial.println("Erro ao ler o sensor!");
+    return;
+  }
+
+  Serial.print("Temperatura: ");
+  Serial.print(temperatura);
+  Serial.print(" Umidade: ");
+  Serial.print(umidade);
+  Serial.print(" Luminosidade: ");
+  Serial.println(ldrValor);
+     
   if(!client.connected())
   {
     Serial.print("Connecting to server");
@@ -61,7 +97,7 @@ void loop()
     delay(3000);
     send_welcome_packet();
   }
- 
+
   delay(1000);
 
   while(client.connected())
@@ -146,4 +182,3 @@ void handle_simple_action_packet(byte* packet)
   Serial.print("Received a simple action packet with value ");
   Serial.println(packet[0x0005]);
 }
-
