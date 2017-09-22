@@ -11,14 +11,33 @@
 #define SERVER_WELCOME_PACKET 0x0001
 #define SERVER_PING_PACKET 0x00FE
 
+#define SERVER_REQUEST_LIGHT   0x000B
+
+#define SERVER_REQUEST_TEMP    0x000C
+#define SERVER_REQUEST_LDR     0x000D
+#define SERVER_REQUEST_MQ2     0x000E
+#define SERVER_REQUEST_MQ6     0x000F
+#define SERVER_REQUEST_USOLO   0x0010
+
 #define SERVER_SIMPLE_ACTION_PACKET 0x00C8
 
 #define CLIENT_WELCOME_PACKET 0x0001
+
+#define CLIENT_SEND_TEMP    0x000C
+#define CLIENT_SEND_LDR     0x000D
+#define CLIENT_SEND_MQ2     0x000E
+#define CLIENT_SEND_MQ6     0x000F
+#define CLIENT_SEND_USOLO   0x0010
+
 #define CLIENT_PONG_PACKET 0x00FE
 
-#define LDR_PIN     A0
-#define DHT_PIN     D1
-#define BUZZER_PIN  D2
+#define LDR_PIN       A0
+#define DHT_PIN       D1
+#define BUZZER_PIN    D2
+#define LIGHT_PIN     D3
+#define MQ2_PIN       D4
+#define MQ6_PIN       D5
+#define USOLO_PIN     D6
 
 #define DHT_TYPE DHT11
  
@@ -27,9 +46,27 @@ WiFiClient client;
 
 uint16_t ESP_ID = 0xAAFF;
 
+float temperaturaAtual, umidadeAtual;
+int luminosidadeAtual, mq2Atual, mq6Atual, umidadeSoloAtual;
+
+int digitalReadOutputPin(uint8_t pin)
+{
+  uint8_t bit = digitalPinToBitMask(pin);
+  uint8_t port = digitalPinToPort(pin);
+  if (port == NOT_A_PIN)
+    return LOW;
+
+  return (*portOutputRegister(port) & bit) ? HIGH : LOW;
+}
+
 void setup()
 {
   pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(LIGHT_PIN,  OUTPUT);
+  pinMode(USOLO_PIN,  INPUT);
+  pinMode(MQ2_PIN,    INPUT);
+  pinMode(MQ6_PIN,    INPUT);
+  
   Serial.begin(9600);
 
   Serial.print("Connecting to ");
@@ -63,24 +100,22 @@ void loop()
   Serial.println("LOW");
   delay(1000);*/
 
-  int ldrValor = analogRead(LDR_PIN);
+  luminosidadeAtual = analogRead(LDR_PIN);
   
-  float umidade = dht.readHumidity();
-  float temperatura = dht.readTemperature();
+  mq2Atual = digitalRead(MQ2_PIN);
+  mq6Atual = digitalRead(MQ6_PIN);
+  
+  umidadeSoloAtual = digitalRead(USOLO_PIN);
+  
+  umidadeAtual = dht.readHumidity();
+  temperaturaAtual = dht.readTemperature();
  
   //Se não for um numero retorna erro de leitura
-  if (isnan(umidade) || isnan(temperatura)) 
+  if (isnan(umidadeAtual) || isnan(temperaturaAtual)) 
   {
     Serial.println("Erro ao ler o sensor!");
     return;
   }
-
-  Serial.print("Temperatura: ");
-  Serial.print(temperatura);
-  Serial.print(" Umidade: ");
-  Serial.print(umidade);
-  Serial.print(" Luminosidade: ");
-  Serial.println(ldrValor);
      
   if(!client.connected())
   {
@@ -139,6 +174,24 @@ void handle_packet(byte* packet)
     case SERVER_SIMPLE_ACTION_PACKET:
       handle_simple_action_packet(packet);
       break;
+    case SERVER_REQUEST_LIGHT:
+      handle_request_light_switch_action_packet();
+      break;
+    case SERVER_REQUEST_TEMP:
+      handle_request_temp_action_packet();
+      break;
+    case SERVER_REQUEST_LDR:
+      handle_request_ldr_action_packet();
+      break;  
+    case SERVER_REQUEST_MQ2:
+      handle_request_mq2_action_packet();
+      break;
+    case SERVER_REQUEST_MQ6:
+      handle_request_mq6_action_packet();
+      break;
+    case SERVER_REQUEST_USOLO:
+      handle_request_usolo_action_packet();
+      break;
     default:
       Serial.print("Received a unknow packet from server ");
       Serial.println(packet[0x04]);
@@ -159,13 +212,12 @@ void send_welcome_packet()
   //Serial.println("Sending Welcome Packet to Server");
   uint8_t welcome_packet[0x0005];
   make_header(welcome_packet);
-  welcome_packet[0x04] = 0x01;
+  welcome_packet[0x04] = (uint8_t) CLIENT_WELCOME_PACKET;
 
   client.write((const uint8_t*)welcome_packet, sizeof(welcome_packet));
   client.flush();
   //Serial.println("Sent!");
 }
-
 
 void send_pong_packet()
 {
@@ -181,4 +233,65 @@ void handle_simple_action_packet(byte* packet)
 {
   Serial.print("Received a simple action packet with value ");
   Serial.println(packet[0x0005]);
+}
+
+void handle_request_light_switch_action_packet()
+{
+  digitalWrite(LIGHT_PIN, !digitalReadOutputPin(outPin));
+}
+
+void handle_request_temp_action_packet()
+{
+  uint8_t temp_packet[0x0007];
+  make_header(temp_packet);
+  temp_packet[0x04] = (uint8_t) CLIENT_SEND_TEMP;
+  temp_packet[0x05] = (uint8_t) temperaturaAtual;
+  temp_packet[0x06] = (uint8_t) umidadeAtual;
+  
+  client.write((const uint8_t*)temp_packet, sizeof(temp_packet));
+  client.flush();
+}
+
+void handle_request_ldr_action_packet()
+{
+  uint8_t ldr_packet[0x0006];
+  make_header(ldr_packet);
+  ldr_packet[0x04] = (uint8_t) CLIENT_SEND_LDR;
+  ldr_packet[0x05] = (uint8_t) luminosidadeAtual;
+  
+  client.write((const uint8_t*)ldr_packet, sizeof(ldr_packet));
+  client.flush();
+}
+
+void handle_request_mq2_action_packet()
+{
+  uint8_t mq2_packet[0x0006];
+  make_header(mq2_packet);
+  mq2_packet[0x04] = (uint8_t) CLIENT_SEND_MQ2;
+  mq2_packet[0x05] = (uint8_t) mq2Atual;
+  
+  client.write((const uint8_t*)mq2_packet, sizeof(mq2_packet));
+  client.flush();
+}
+
+void handle_request_mq6_action_packet()
+{
+  uint8_t mq6_packet[0x0006];
+  make_header(mq6_packet);
+  mq6_packet[0x04] = (uint8_t) CLIENT_SEND_MQ6;
+  mq6_packet[0x05] = (uint8_t) mq6Atual;
+  
+  client.write((const uint8_t*)mq6_packet, sizeof(mq6_packet));
+  client.flush();
+}
+
+void handle_request_usolo_action_packet()
+{
+  uint8_t usolo_packet[0x0006];
+  make_header(usolo_packet);
+  usolo_packet[0x04] = (uint8_t) CLIENT_SEND_USOLO;
+  usolo_packet[0x05] = (uint8_t) umidadeSoloAtual;
+  
+  client.write((const uint8_t*)usolo_packet, sizeof(usolo_packet));
+  client.flush();
 }
