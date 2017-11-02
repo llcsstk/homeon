@@ -37,12 +37,24 @@ void DAOComodo::InicializaMock()
 	mockComodos.push_back(new Comodo
 	{
 		.codigo = 1,
-		.nome = "Sala"
+		.nome = "Sala",
+		.tipo = 1,
+		.externo = false
 	});
 	
 	mockComodos.push_back(new Comodo
 	{
 		.codigo = 2,
-		.nome = "Cozinha"
+		.nome = "Cozinha",
+		.tipo = 2,
+		.externo = false
+	});
+	
+	mockComodos.push_back(new Comodo
+	{
+		.codigo = 3,
+		.nome = "Escritório",
+		.tipo = 3,
+		.externo = false
 	});
 }

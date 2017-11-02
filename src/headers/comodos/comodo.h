@@ -10,6 +10,8 @@ typedef struct comod_
 {
 	uint16_t codigo;
 	std::string nome;
+	uint16_t tipo;
+	bool externo;
 }Comodo;
 
 #endif
