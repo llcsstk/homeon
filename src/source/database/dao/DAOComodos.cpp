@@ -57,4 +57,36 @@ void DAOComodo::InicializaMock()
 		.tipo = 3,
 		.externo = false
 	});
+	
+	mockComodos.push_back(new Comodo
+	{
+		.codigo = 4,
+		.nome = "Quarto 1",
+		.tipo = 4,
+		.externo = false
+	});
+	
+	mockComodos.push_back(new Comodo
+	{
+		.codigo = 5,
+		.nome = "Jardim",
+		.tipo = 5,
+		.externo = true
+	});
+	
+	mockComodos.push_back(new Comodo
+	{
+		.codigo = 6,
+		.nome = "Piscina",
+		.tipo = 6,
+		.externo = true
+	});
+	
+	mockComodos.push_back(new Comodo
+	{
+		.codigo = 7,
+		.nome = "Churrasqueira",
+		.tipo = 7,
+		.externo = true
+	});
 }

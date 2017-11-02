@@ -17,6 +17,10 @@ void ComodoSerializer::serializeComodo(json::Writer<json::StringBuffer>* writer,
 	writer->Uint(com->codigo);
 	writer->Key("nome");
 	writer->String(com->nome.c_str());
+	writer->Key("Tipo");
+	writer->Uint(com->tipo);
+	writer->Key("Externo");
+	writer->Bool(com->externo);
 	writer->EndObject();
 }
 
