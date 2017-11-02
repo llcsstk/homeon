@@ -3,16 +3,21 @@
 
 #include "crow.h"
 
+#define WEB_ROUTER_PORT 18080
+
 class WebRouter
 {
 private:
 	crow::SimpleApp app;
 	void start_app();
 	void RegisterLogin();
-	void registerSensorRoute();
+	void RegisterSensorRoute();
+	void RegisterActualHumidity();
 	void RegisterActualTemperature();
 	void RegisterSensorAction();
-	void RegisterResponse(crow::response* response_);
+	void RegisterComodosRoute();
+	void RegisterSensorPorComodoRoute();
+	void SignResponse(crow::response* response_);
 public:
 	WebRouter();
 	void Start();

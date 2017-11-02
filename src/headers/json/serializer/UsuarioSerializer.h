@@ -1,9 +1,10 @@
+#ifndef USUARIOSERIALIZER
+#define USUARIOSERIALIZER
+
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include <cppconn/resultset.h>
 #include "src/headers/usuarios/usuario.h"
-
 
 #include <iostream>
 #include <stdio.h>
@@ -11,16 +12,13 @@
 
 namespace json = rapidjson;
 
-void serialize(json::Writer<json::StringBuffer>* writer, Usuario* usr)
+class UsuarioSerializer
 {
-	writer->StartObject();
-	writer->Key("codigo");
-	writer->Uint(usr->codigo);
-	writer->Key("login");
-	writer->String(usr->login.c_str());
-	writer->Key("nome");
-	writer->String(usr->nome.c_str());
-	writer->Key("perfil");
-	writer->String(usr->perfil.c_str());
-	writer->EndObject();
-}
+public:
+	static UsuarioSerializer* GetSerializer();
+	void serialize(json::Writer<json::StringBuffer>* writer, Usuario* usr);
+private:
+	static UsuarioSerializer* m_This;
+};
+
+#endif

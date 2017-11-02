@@ -4,6 +4,8 @@
 #include "src/headers/database/mysql_manager.h"
 #include "src/headers/usuarios/usuario.h"
 
+#include <vector>
+
 static Usuario* m_Usuarios[1] = {
 	new Usuario
 	{
@@ -22,6 +24,9 @@ public:
 	Usuario* Login(std::string login, std::string passwd);
 private:
 	static DAOUsuario* m_This;
+	static std::vector<Usuario*> mockUsuarios;
+	
+	void InicializaMock();
 };
 
 #endif

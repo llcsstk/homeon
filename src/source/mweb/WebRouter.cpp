@@ -1,39 +1,35 @@
 #include "src/headers/mweb/WebRouter.h"
-#include "src/headers/database/dao/DAOSensores.h"
-#include "src/headers/database/dao/DAOUsuarios.h"
 
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "src/headers/controls/UsuarioControl.h"
+#include "src/headers/controls/SensorControl.h"
+#include "src/headers/controls/ComodoControl.h"
+
+#include "rapidjson/prettywriter.h"
 
 #include "src/headers/sensores/SensorManager.h"
 
 #include "src/headers/json/serializer/SensorSerializer.h"
-#include "src/headers/json/serializer/UsuarioSerializer.h"
 
 #include <thread>
 
-namespace json = rapidjson;
+using namespace rapidjson;
 
 WebRouter::WebRouter()
 {
 	crow::logger::setLogLevel(crow::LogLevel::CRITICAL);
-	
-	CROW_ROUTE(app, "/")
-    ([](const crow::request&, crow::response& response_) 
-	{
-		response_.write("teste");
-		response_.end();
-	});
 }
 
 void WebRouter::start_app()
 {
 	RegisterLogin();
-	registerSensorRoute();
+	RegisterSensorRoute();
+	RegisterActualHumidity();
 	RegisterActualTemperature();
 	RegisterSensorAction();
+	RegisterComodosRoute();
+	RegisterSensorPorComodoRoute();
 	
-	app.port(18080).multithreaded().run();
+	app.port(WEB_ROUTER_PORT).multithreaded().run();
 }
 
 void WebRouter::Start()
@@ -42,10 +38,11 @@ void WebRouter::Start()
 	web_t.detach();
 }
 
-void WebRouter::RegisterResponse(crow::response* response_)
+void WebRouter::SignResponse(crow::response* response_)
 {
 	response_->set_header("Content-Type", "application/json");
 	response_->set_header("Server", "HomeOn/0.1 (Crow)");
+	response_->end();
 }
 
 void WebRouter::RegisterActualTemperature()
@@ -53,9 +50,18 @@ void WebRouter::RegisterActualTemperature()
 	CROW_ROUTE(app, "/temperaturaAtual")
     ([&](const crow::request&, crow::response& response_) 
 	{
-		WebRouter::RegisterResponse(&response_);
 		response_.write("{\n	temperatura:15c\n}");
-		response_.end();
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterActualHumidity()
+{
+	CROW_ROUTE(app, "/umidadeAtual")
+    ([&](const crow::request&, crow::response& response_) 
+	{
+		response_.write("{\n	umidade:15%\n}");
+		WebRouter::SignResponse(&response_);
 	});
 }
 
@@ -74,11 +80,7 @@ void WebRouter::RegisterSensorAction()
 		int action = x["action"].i();
 		
 		bool sended = HandleNewAction(codigoSensor, action);
-		
-		/*int sum = x["a"].i()+x["b"].i();
-		std::ostringstream os;
-		os << sum;
-		return crow::response{os.str()};*/
+
 		if(sended)
 			return crow::response(200);
 		else 
@@ -92,39 +94,12 @@ void WebRouter::RegisterLogin()
 	.methods("POST"_method)
 	([&](const crow::request& req, crow::response& response_) 
 	{
-		auto x = crow::json::load(req.body);
-		
-		if (!x)
-		{
-			response_.end();
-			return;
-		}
-			
-		std::string login = x["login"].s();
-		std::string passwd = x["passwd"].s();
-		
-		Usuario* usr = DAOUsuario::GetDAO()->Login(login, passwd);
-		
-		if(usr == NULL)
-		{
-			WebRouter::RegisterResponse(&response_);
-			response_.write("401 Unauthorized");
-			response_.end();
-			return;
-		}
-		
-		json::StringBuffer buffer;
-		json::Writer<json::StringBuffer> writer(buffer);
-		
-		serialize(&writer, usr);
-		
-		WebRouter::RegisterResponse(&response_);
-		response_.write(buffer.GetString());
-		response_.end();
+		UsuarioControl::GetControl()->Login(&req, &response_);
+		WebRouter::SignResponse(&response_);
 	});
 }
 
-void WebRouter::registerSensorRoute()
+void WebRouter::RegisterSensorRoute()
 {
 	CROW_ROUTE(app, "/sensores")
     ([&](const crow::request&, crow::response& response_) 
@@ -140,13 +115,27 @@ void WebRouter::registerSensorRoute()
 		delete con;
 		delete sensores;*/
 		
-		json::StringBuffer buffer;
-		json::Writer<json::StringBuffer> writer(buffer);
-		
-		serializeList(&writer, m_Sensores);
-		
-		WebRouter::RegisterResponse(&response_);
-		response_.write(buffer.GetString());
-		response_.end();
+		SensorControl::GetControl()->ListarTodos(&response_);
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterComodosRoute()
+{
+	CROW_ROUTE(app, "/comodos")
+    ([&](const crow::request&, crow::response& response_) 
+	{
+		ComodoControl::GetControl()->ListarTodos(&response_);
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterSensorPorComodoRoute()
+{
+	CROW_ROUTE(app, "/sensor/comodo/<int>")
+    ([&](const crow::request&, crow::response& response_, int comodo) 
+	{
+		SensorControl::GetControl()->ListarPorCodigoComodo(&response_, comodo);
+		WebRouter::SignResponse(&response_);
 	});
 }

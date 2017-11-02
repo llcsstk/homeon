@@ -13,8 +13,9 @@ typedef struct sensor
 {
 	uint16_t codigo;
 	std::string nome;
-	t_sensor tipo;
+	uint16_t codigoComodo;
 	std::string ip;
+	t_sensor tipo;
 }Sensor;
 
 #endif

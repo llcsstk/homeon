@@ -1,55 +1,33 @@
-#include "rapidjson/writer.h"
+#ifndef SENSOR_SERIALIZER
+#define SENSOR_SERIALIZER
+
+#include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
 #include <cppconn/resultset.h>
 #include "src/headers/sensores/sensor.h"
 
+#include "src/headers/json/serializer/ComodoSerializer.h"
+#include "src/headers/database/dao/DAOComodos.h"
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <vector>
+
 namespace json = rapidjson;
 
-void serialize(json::Writer<json::StringBuffer>* writer, sql::ResultSet* rs)
+class SensorSerializer
 {
-	writer->StartObject();
-	writer->Key("idSensor");
-	writer->Int(rs->getInt("idSensor"));
-	writer->Key("nome");
-	writer->String(rs->getString("nome").c_str());
-	writer->Key("ip");
-	writer->String(rs->getString("ip").c_str());
-	writer->EndObject();
-}
+public:
+	static SensorSerializer* GetSerializer();
+	void serializeSensor(json::PrettyWriter<json::StringBuffer>* writer, sql::ResultSet* rs);
+	void serializeSensor(json::PrettyWriter<json::StringBuffer>* writer, Sensor* sen);
+	void serializeSensorList(json::PrettyWriter<json::StringBuffer>* writer, sql::ResultSet* rs);
+	void serializeSensorList(json::PrettyWriter<json::StringBuffer>* writer, std::vector<Sensor*> sensores);
+private:
+	static SensorSerializer* m_This;
+};
 
-void serialize(json::Writer<json::StringBuffer>* writer, Sensor* sen)
-{
-	writer->StartObject();
-	writer->Key("idSensor");
-	writer->Uint(sen->codigo);
-	writer->Key("nome");
-	writer->String(sen->nome.c_str());
-	writer->Key("ip");
-	writer->String(sen->ip.c_str());
-	writer->EndObject();
-}
-
-void serializeList(json::Writer<json::StringBuffer>* writer, sql::ResultSet* rs)
-{
-	writer->StartArray();
-	while(rs->next())
-	{
-		serialize(writer, rs);
-	}
-	writer->EndArray();
-}
-
-void serializeList(json::Writer<json::StringBuffer>* writer, Sensor* sensores[])
-{
-	writer->StartArray();
-	
-	for (uint16_t sensor_index = 0; sensor_index <= (sizeof(sensores) / sizeof(sensores[0])); sensor_index++)
-		serialize(writer, sensores[sensor_index]);
-
-	writer->EndArray();
-}
+#endif

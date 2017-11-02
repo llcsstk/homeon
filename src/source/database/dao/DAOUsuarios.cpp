@@ -4,23 +4,39 @@
 #include <boost/algorithm/string.hpp>
 
 DAOUsuario* DAOUsuario::m_This = NULL;
+std::vector<Usuario*> DAOUsuario::mockUsuarios;
 
 DAOUsuario* DAOUsuario::GetDAO()
 {
 	if(m_This == NULL)
+	{
 		m_This = new DAOUsuario();
+		m_This->InicializaMock();
+	}
 	return m_This;
 }
 
 Usuario* DAOUsuario::Login(std::string login, std::string passwd)
 {
-	for (uint16_t u_index = 0; u_index < (sizeof(m_Usuarios) / sizeof(m_Usuarios[0])); u_index++)
+	for(auto const& usuario: mockUsuarios)
 	{
-		Usuario* usr = m_Usuarios[u_index];
+		Usuario* usr = (Usuario*) usuario;
 		
-		//if(strcmp(usr->login.c_str(), login.c_str()) == 0 && strcmp(usr->senha.c_str(), passwd.c_str()) == 0)
 		if(boost::iequals(usr->login, login) && boost::iequals(usr->senha, passwd))
 			return usr;
 	}
+	
 	return NULL;
+}
+
+void DAOUsuario::InicializaMock()
+{
+	mockUsuarios.push_back(new Usuario
+	{
+		.codigo = 1,
+		.login = "lucas",
+		.senha = "1234",
+		.perfil = "Dono",
+		.nome = "Lucas Leite"
+	});
 }

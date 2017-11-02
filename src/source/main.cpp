@@ -10,6 +10,13 @@
 #include <thread>
 #include <string.h>
 
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include <iostream>
+
+using namespace rapidjson;
+using namespace std;
+
 //namespace json = rapidjson;
 
 /*void start_web()
@@ -87,8 +94,6 @@ int main()
 	
 	WebRouter* router = new WebRouter();
 	router->Start();
-	
-	/*testDatabase();*/
 	
 	while(true)
 	{
