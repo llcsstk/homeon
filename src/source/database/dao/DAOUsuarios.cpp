@@ -33,10 +33,19 @@ void DAOUsuario::InicializaMock()
 {
 	mockUsuarios.push_back(new Usuario
 	{
-		.codigo = 1,
+		.codigo = 2,
 		.login = "lucas",
 		.senha = "1234",
-		.perfil = "Dono",
+		.perfil = "Visitante",
 		.nome = "Lucas Leite"
+	});
+
+	mockUsuarios.push_back(new Usuario
+	{
+		.codigo = 1,
+		.login = "missura",
+		.senha = "1234",
+		.perfil = "Dono",
+		.nome = "Douglas Missura"
 	});
 }

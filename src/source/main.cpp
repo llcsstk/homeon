@@ -81,6 +81,8 @@ using namespace std;
 
 int main()
 {
+	bool running = true;
+
 	CLogger::GetLogger()->Log("HomeOn.Central Bootstrap is initializing");
 
 	boost::asio::io_service srv;
@@ -95,7 +97,7 @@ int main()
 	WebRouter* router = new WebRouter();
 	router->Start();
 	
-	while(true)
+	while(running)
 	{
 		int key_pressed = std::cin.get();
 		
@@ -108,7 +110,8 @@ int main()
 				std::cout << "Console logging is disabled;" << std::endl << std::endl;
 				std::cout << "Options:" << std::endl;
 				std::cout << "	1-Send Simple Action" << std::endl;
-				std::cout << "	2-View All clients" << std::endl << std::endl;
+				std::cout << "	2-View All clients" << std::endl;
+				std::cout << "	9-Close HomeOn Central" << std::endl << std::endl;
 				std::cout << "	0-Exit action center" << std::endl;
 				std::cout << "Enter action: ";
 				
@@ -151,6 +154,10 @@ int main()
 					{
 						ClientManager::GetManager()->PrintAllClients();
 					}
+					break;
+					case 9:
+						running = false;
+						option = 0x00;
 					break;
 					default:
 						break;

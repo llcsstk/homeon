@@ -50,7 +50,7 @@ void WebRouter::RegisterActualTemperature()
 	CROW_ROUTE(app, "/temperaturaAtual")
     ([&](const crow::request&, crow::response& response_) 
 	{
-		response_.write("{\n	temperatura:15c\n}");
+		response_.write("{\n	\"temperatura\":\"15\"\n}");
 		WebRouter::SignResponse(&response_);
 	});
 }
@@ -60,7 +60,7 @@ void WebRouter::RegisterActualHumidity()
 	CROW_ROUTE(app, "/umidadeAtual")
     ([&](const crow::request&, crow::response& response_) 
 	{
-		response_.write("{\n	umidade:15%\n}");
+		response_.write("{\n	\"umidade\":\"15\"\n}");
 		WebRouter::SignResponse(&response_);
 	});
 }
