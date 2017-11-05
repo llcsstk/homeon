@@ -51,17 +51,34 @@ std::vector<Sensor*> DAOSensores::GetSensores()
 
 void DAOSensores::InicializaMock()
 {
+	TipoSensor* tipoSensorLampada = new TipoSensor;
+	tipoSensorLampada->codigo = 1;
+	tipoSensorLampada->descricao = "Lâmpada";
+	
 	mockSensor.push_back(new Sensor
 	{
 		.codigo = 1,
-		.nome = "Luz da Sala",
-		.codigoComodo = 1
+		.nome = "Luz da TV",
+		.codigoComodo = 1,
+		.ip = "192.168.0.10",
+		.tipo = tipoSensorLampada
 	});
 	
 	mockSensor.push_back(new Sensor
 	{
 		.codigo = 2,
+		.nome = "Luz do Sofá",
+		.codigoComodo = 1,
+		.ip = "192.168.0.11",
+		.tipo = tipoSensorLampada
+	});
+	
+	mockSensor.push_back(new Sensor
+	{
+		.codigo = 3,
 		.nome = "Luz da Cozinha",
-		.codigoComodo = 2
+		.codigoComodo = 2,
+		.ip = "192.168.0.12",
+		.tipo = tipoSensorLampada
 	});
 }

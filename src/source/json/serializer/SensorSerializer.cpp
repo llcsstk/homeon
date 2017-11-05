@@ -44,6 +44,17 @@ void SensorSerializer::serializeSensor(json::PrettyWriter<json::StringBuffer>* w
 		ComodoSerializer::GetSerializer()->serializeComodo(writer, comodo);
 	}
 	
+	if(sen->tipo != NULL)
+	{
+		writer->Key("Tipo");
+		writer->StartObject();
+		writer->Key("codigo");
+		writer->Uint(sen->tipo->codigo);
+		writer->Key("descricao");
+		writer->String(sen->tipo->descricao.c_str());
+		writer->EndObject();
+	}
+	
 	writer->EndObject();
 }
 
