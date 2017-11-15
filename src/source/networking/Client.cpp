@@ -74,7 +74,7 @@ void CSClient::SendWelcome()
 	{
 		if (!ec)
 		{
-			//CLogger::GetLogger()->Log("Sending Welcome Back Packet with %d bytes", transmited);
+			CLogger::GetLogger()->Log("Sending Welcome Back Packet with %d bytes", transmited);
 		}
 		else
 		{
@@ -99,7 +99,7 @@ void CSClient::SendPing()
 	{
 		if (!ec)
 		{
-			//CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
+			CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
 		}
 		else
 		{
@@ -121,7 +121,7 @@ void CSClient::SendSimpleAction(uint8_t value)
 	{
 		if (!ec)
 		{
-			//CLogger::GetLogger()->Log("Sending Simple Action Packet with %d bytes", transmited);
+			CLogger::GetLogger()->Log("Sending Simple Action Packet with %d bytes", transmited);
 		}
 		else
 		{
