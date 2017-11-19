@@ -83,8 +83,8 @@ void CSClient::SendWelcome()
 
 void CSClient::SendPing()
 {
-	//if(!isActive)
-		//return;
+	if(!isActive)
+		return;
 		
 	//CLogger::GetLogger()->Log("Sending Ping Packet");
 
@@ -261,14 +261,11 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 
 void CSClient::StartPingControl()
 {
-	SendPing();
-	
 	while(isActive)
 	{		
 		sleep(2);
 		SendPing();
 	}
-
 }
 
 void CSClient::CloseClient()
