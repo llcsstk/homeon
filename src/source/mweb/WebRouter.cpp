@@ -173,9 +173,16 @@ void WebRouter::RegisterLightSwitch()
 	CROW_ROUTE(app, "/lightswitch/<int>/<int>")
     ([&](const crow::request&, crow::response& response_, int sensorid, int index) 
 	{
-		ClientManager::GetManager()->GetClient(sensorid)->SendSwitchLight(index);
+		std::shared_ptr<CSClient> module = ClientManager::GetManager()->GetClient(sensorid);
 		
-		response_ = crow::response(200);
+		if(module != NULL)
+		{
+			module->SendSwitchLight(index);
+			response_ = crow::response(200);
+		}
+		else
+			response_ = crow::response(500);
+
 		
 		WebRouter::SignResponse(&response_);
 	});
