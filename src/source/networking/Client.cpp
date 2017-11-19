@@ -89,7 +89,7 @@ void CSClient::SendPing()
 	if(!isActive)
 		return;
 		
-	CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
+	CLogger::GetLogger()->Log("Sending Ping Packet");
 
 	auto self(shared_from_this());
 	
