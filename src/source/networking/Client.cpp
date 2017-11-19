@@ -29,11 +29,6 @@ void CSClient::Start()
 	CSClient::ping_thread.detach();
 
 	CSClient::StartRead();
-	
-	input_deadline_.expires_at(boost::posix_time::pos_infin);
-	input_deadline_.async_wait(
-        boost::bind(&CSClient::check_deadline,
-        shared_from_this(), &input_deadline_));
 }
 
 void CSClient::StartRead()
@@ -204,6 +199,15 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 		case PING_PACKET:
 		{
 			input_deadline_.expires_from_now(boost::posix_time::seconds(7));
+			
+			if(!deadline_active)
+			{
+				input_deadline_.async_wait(
+					boost::bind(&CSClient::check_deadline,
+					shared_from_this(), &input_deadline_));
+				
+				deadline_active = true;
+			}
 		}
 		break;
 		case TEMP_HUMIDITY_PACKET:
@@ -271,6 +275,7 @@ void CSClient::StartPingControl()
 void CSClient::CloseClient()
 {
 	isActive = false;
+	deadline_active = false;
 	
 	input_deadline_.cancel();
 	

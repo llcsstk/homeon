@@ -37,6 +37,7 @@ private:
 	boost::thread* background_thread;
 	
 	bool isActive;
+	bool deadline_active = false;
 	
 	void StartRead();
 	bool disconnected() const;
