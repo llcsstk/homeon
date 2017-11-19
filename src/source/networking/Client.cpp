@@ -17,8 +17,6 @@ CSClient::CSClient(tcp::socket socket)
 	cinfo->timestamp = -1;
 	
 	isActive = true;
-
-	//input_deadline_.expires_at(boost::posix_time::pos_infin);
 }
 
 uint16_t CSClient::GetClientId()
@@ -28,11 +26,11 @@ uint16_t CSClient::GetClientId()
 
 void CSClient::Start()
 {
-	//CSClient::ping_thread.detach();
+	CSClient::ping_thread.detach();
 
 	CSClient::StartRead();
 	
-	input_deadline_.expires_from_now(boost::posix_time::seconds(5));
+	input_deadline_.expires_at(boost::posix_time::pos_infin);
 	input_deadline_.async_wait(
         boost::bind(&CSClient::check_deadline,
         shared_from_this(), &input_deadline_));
@@ -205,7 +203,7 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 		break;
 		case PING_PACKET:
 		{
-			input_deadline_.expires_from_now(boost::posix_time::seconds(5));
+			input_deadline_.expires_from_now(boost::posix_time::seconds(10));
 		}
 		break;
 		case TEMP_HUMIDITY_PACKET:
