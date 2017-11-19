@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=homeon
-Date                   :=11/01/17
+Date                   :=11/19/17
 CodeLitePath           :=/home/homeon/.codelite
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -59,9 +59,10 @@ AS       := /usr/bin/as
 ##
 ## User defined environment variables
 ##
+!CodeLiteDir:=/usr/share/codelite
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/src_source_main.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_Server.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_Client.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_ClientManager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_SensorManager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_logging_Logger.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_mysql_manager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_mweb_WebRouter.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_controls_SensorControl.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_controls_UsuarioControl.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/src_source_controls_ComodoControl.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOSensores.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOUsuarios.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOComodos.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_ComodoSerializer.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_SensorSerializer.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_UsuarioSerializer.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/src_source_main.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_Server.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_Client.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_ClientManager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_networking_SensorManager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_logging_Logger.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_mysql_manager.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_datasheet.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_mweb_WebRouter.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_controls_SensorControl.cpp$(ObjectSuffix) \
+	$(IntermediateDirectory)/src_source_controls_UsuarioControl.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_controls_ComodoControl.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOSensores.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOUsuarios.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_database_dao_DAOComodos.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_ComodoSerializer.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_SensorSerializer.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_source_json_serializer_UsuarioSerializer.cpp$(ObjectSuffix) 
 
 
 
@@ -147,6 +148,14 @@ $(IntermediateDirectory)/src_source_database_mysql_manager.cpp$(DependSuffix): s
 
 $(IntermediateDirectory)/src_source_database_mysql_manager.cpp$(PreprocessSuffix): src/source/database/mysql_manager.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_source_database_mysql_manager.cpp$(PreprocessSuffix) src/source/database/mysql_manager.cpp
+
+$(IntermediateDirectory)/src_source_database_datasheet.cpp$(ObjectSuffix): src/source/database/datasheet.cpp $(IntermediateDirectory)/src_source_database_datasheet.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/homeon/HomeOn/HomeOn_Central/src/source/database/datasheet.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_source_database_datasheet.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/src_source_database_datasheet.cpp$(DependSuffix): src/source/database/datasheet.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_source_database_datasheet.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_source_database_datasheet.cpp$(DependSuffix) -MM src/source/database/datasheet.cpp
+
+$(IntermediateDirectory)/src_source_database_datasheet.cpp$(PreprocessSuffix): src/source/database/datasheet.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_source_database_datasheet.cpp$(PreprocessSuffix) src/source/database/datasheet.cpp
 
 $(IntermediateDirectory)/src_source_mweb_WebRouter.cpp$(ObjectSuffix): src/source/mweb/WebRouter.cpp $(IntermediateDirectory)/src_source_mweb_WebRouter.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/homeon/HomeOn/HomeOn_Central/src/source/mweb/WebRouter.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_source_mweb_WebRouter.cpp$(ObjectSuffix) $(IncludePath)
