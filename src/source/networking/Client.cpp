@@ -106,7 +106,7 @@ void CSClient::SendPing()
 		}
 		else
 		{
-			CSClient::CloseClient();
+			//CSClient::CloseClient();
 		}
 	});
 }
@@ -264,10 +264,11 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 
 void CSClient::StartPingControl()
 {
+	SendPing();
+	
 	while(isActive)
-	{
+	{		
 		sleep(2);
-		
 		SendPing();
 	}
 
