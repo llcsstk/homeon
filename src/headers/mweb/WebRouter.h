@@ -15,6 +15,8 @@ private:
 	void RegisterActualHumidity();
 	void RegisterActualTemperature();
 	void RegisterSensorAction();
+	void RegisterLightSwitch();
+	void RegisterActualUSolo();
 	void RegisterComodosRoute();
 	void RegisterSensorPorComodoRoute();
 	void SignResponse(crow::response* response_);

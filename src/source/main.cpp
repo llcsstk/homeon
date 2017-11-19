@@ -155,6 +155,34 @@ int main()
 						ClientManager::GetManager()->PrintAllClients();
 					}
 					break;
+					case 3:
+					{
+						std::cout << std::endl;
+						
+						std::cout << "Informe o número do cliente: ";
+						
+						std::getline(std::cin, s);
+						
+						uint16_t client_id = static_cast<uint16_t>(std::stoi(s));
+						
+						std::shared_ptr<CSClient> client = ClientManager::GetManager()->GetClient(client_id);
+						
+						if(client == NULL)
+							std::cout << "Invalid client!" << std::endl;
+						else
+						{
+							std::cout << "Informe o valor da ação: ";
+							
+							std::getline(std::cin, s);
+							
+							int valor = std::stoi(s);
+							
+							ClientManager::GetManager()->GetClient(client_id)->SendSwitchLight(valor);
+							
+							std::cout << "Light Switch Action Sent!" << std::endl;
+						}
+					}
+					break;
 					case 9:
 						running = false;
 						option = 0x00;

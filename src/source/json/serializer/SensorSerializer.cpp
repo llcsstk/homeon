@@ -55,6 +55,9 @@ void SensorSerializer::serializeSensor(json::PrettyWriter<json::StringBuffer>* w
 		writer->EndObject();
 	}
 	
+	writer->Key("index");
+	writer->Uint(sen->index);
+	
 	writer->EndObject();
 }
 

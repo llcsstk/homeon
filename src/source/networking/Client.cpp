@@ -3,6 +3,7 @@
 #include "../../headers/networking/ClientPackets.h"
 #include "../../headers/networking/ClientManager.h"
 #include "../../headers/logging/Logger.h"
+#include "../../headers/networking/Packet.h"
 
 
 CSClient::CSClient(tcp::socket socket)
@@ -99,7 +100,7 @@ void CSClient::SendPing()
 	{
 		if (!ec)
 		{
-			CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
+			//CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
 		}
 		else
 		{
@@ -130,6 +131,48 @@ void CSClient::SendSimpleAction(uint8_t value)
 	});
 }
 
+void CSClient::SendSwitchLight(uint8_t index)
+{
+	auto self(shared_from_this());
+	
+	Packet* light_switch_packet = ServerPackets::LightSwitch(new Packet(cinfo), index);
+	
+    boost::asio::async_write(socket_,
+	boost::asio::buffer(light_switch_packet->data(),
+	light_switch_packet->length()),
+    [this, self](boost::system::error_code ec, std::size_t transmited)
+	{
+		if (!ec)
+		{
+			CLogger::GetLogger()->Log("Sending Light Switch Packet with %d bytes", transmited);
+		}
+		else
+		{
+			CSClient::CloseClient();
+		}
+	});
+}
+
+void CSClient::SendDefaultPacket(Packet* packet)
+{
+	auto self(shared_from_this());
+	
+    boost::asio::async_write(socket_,
+	boost::asio::buffer(packet->data(),
+	packet->length()),
+    [this, self](boost::system::error_code ec, std::size_t transmited)
+	{
+		if (!ec)
+		{
+			CLogger::GetLogger()->Log("Sending Packet with %d bytes", transmited);
+		}
+		else
+		{
+			CSClient::CloseClient();
+		}
+	});
+}
+
 void CSClient::HandlePacket(std::array<char, 1024> packet)
 {
 	switch((uint8_t) packet[0x0004])
@@ -141,14 +184,74 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 			
 			cinfo->client_id = ((uint16_t) client_id_1 << 8) | client_id_2;
 			
+			uint8_t moduletype = (uint8_t) packet[0x0002];
+			
 			//CLogger::GetLogger()->Log("Welcome Packet received from client %d", cinfo->client_id);
-			CLogger::GetLogger()->Log("	-> Client [%d] registered successfully!", cinfo->client_id);
+			CLogger::GetLogger()->Log("	-> Client [%d] registered successfully as %d module!", cinfo->client_id, moduletype);
 			CSClient::SendWelcome();
+			
+			if(moduletype == DHT_MODULE)
+				background_thread = new boost::thread(boost::bind(&CSClient::temp_humidity_thread, shared_from_this()));
+			else if(moduletype == USOLO_MODULE)
+				background_thread = new boost::thread(boost::bind(&CSClient::usolo_thread, shared_from_this()));
+			else if(moduletype == LDR_MODULE)
+				background_thread = new boost::thread(boost::bind(&CSClient::ldr_thread, shared_from_this()));
+			else if(moduletype == MQ2_MODULE)
+				background_thread = new boost::thread(boost::bind(&CSClient::mq2_thread, shared_from_this()));
+			else if(moduletype == MQ6_MODULE)
+				background_thread = new boost::thread(boost::bind(&CSClient::mq6_thread, shared_from_this()));
 		}
 		break;
 		case PING_PACKET:
 		{
 			//nothing to do
+		}
+		break;
+		case TEMP_HUMIDITY_PACKET:
+		{
+			uint8_t temp_data = packet[0x0005];
+			uint8_t humidity_data = packet[0x0006];
+			
+			CLogger::GetLogger()->Log("Temperature Packet received from client %d , %d", cinfo->client_id, temp_data, humidity_data);
+			
+			DATA_SHEET::GetDataSheet()->temp = temp_data;
+			DATA_SHEET::GetDataSheet()->humidity = humidity_data;
+		}
+		break;
+		case LDR_PACKET:
+		{
+			uint8_t data = packet[0x0005];
+			
+			CLogger::GetLogger()->Log("LDR Packet received from client %d width data %d", cinfo->client_id, data);
+			
+			DATA_SHEET::GetDataSheet()->luminosity = data;
+		}
+		break;
+		case MQ2_PACKET:
+		{
+			uint8_t data = packet[0x0005];
+			
+			CLogger::GetLogger()->Log("MQ2 Packet received from client %d width data %d", cinfo->client_id, data);
+			
+			DATA_SHEET::GetDataSheet()->mq2_presence = (data == (uint8_t) 0x0001);
+		}
+		break;
+		case MQ6_PACKET:
+		{
+			uint8_t data = packet[0x0005];
+			
+			CLogger::GetLogger()->Log("MQ6 Packet received from client %d width data %d", cinfo->client_id, data);
+			
+			DATA_SHEET::GetDataSheet()->mq6_presence = (data == (uint8_t) 0x0001);
+		}
+		break;
+		case USOLO_PACKET:
+		{
+			uint8_t data = packet[0x0005];
+			
+			CLogger::GetLogger()->Log("USolo Packet received from client %d width data %d", cinfo->client_id, data);
+			
+			DATA_SHEET::GetDataSheet()->usolo = data;
 		}
 		break;
 		default:
@@ -174,6 +277,9 @@ void CSClient::CloseClient()
 	
 	input_deadline_.cancel();
 	
+	if(background_thread != NULL)
+		background_thread->interrupt();
+	
 	CLogger::GetLogger()->Log("	Closing Client [%d] ", cinfo->client_id);
 	ClientManager::GetManager()->UnregisterClient(shared_from_this());
 }
@@ -197,5 +303,55 @@ void CSClient::check_deadline(boost::asio::deadline_timer* deadline)
 		deadline->async_wait(
 		boost::bind(&CSClient::check_deadline,
 		shared_from_this(), deadline));
+	}
+}
+
+void CSClient::usolo_thread()
+{
+	sleep(2);
+	while(isActive)
+	{
+		CSClient::SendDefaultPacket(ServerPackets::USoloRequest(new Packet(cinfo)));
+		sleep(10);
+	}
+}
+
+void CSClient::temp_humidity_thread()
+{
+	sleep(2);
+	while(isActive)
+	{
+		CSClient::SendDefaultPacket(ServerPackets::TempHumidityRequest(new Packet(cinfo)));
+		sleep(10);
+	}
+}
+
+void CSClient::ldr_thread()
+{
+	sleep(2);
+	while(isActive)
+	{
+		CSClient::SendDefaultPacket(ServerPackets::LdrRequest(new Packet(cinfo)));
+		sleep(4);
+	}
+}
+
+void CSClient::mq2_thread()
+{
+	sleep(2);
+	while(isActive)
+	{
+		CSClient::SendDefaultPacket(ServerPackets::MQ2Request(new Packet(cinfo)));
+		sleep(1);
+	}
+}
+
+void CSClient::mq6_thread()
+{
+	sleep(2);
+	while(isActive)
+	{
+		CSClient::SendDefaultPacket(ServerPackets::MQ6Request(new Packet(cinfo)));
+		sleep(1);
 	}
 }

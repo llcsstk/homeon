@@ -57,28 +57,31 @@ void DAOSensores::InicializaMock()
 	
 	mockSensor.push_back(new Sensor
 	{
-		.codigo = 1,
+		.codigo = 43775,
 		.nome = "Luz da TV",
 		.codigoComodo = 1,
 		.ip = "192.168.0.10",
-		.tipo = tipoSensorLampada
+		.tipo = tipoSensorLampada,
+		.index = 1
 	});
 	
 	mockSensor.push_back(new Sensor
 	{
-		.codigo = 2,
+		.codigo = 43775,
 		.nome = "Luz do Sofá",
 		.codigoComodo = 1,
 		.ip = "192.168.0.11",
-		.tipo = tipoSensorLampada
+		.tipo = tipoSensorLampada,
+		.index = 2
 	});
 	
 	mockSensor.push_back(new Sensor
 	{
-		.codigo = 3,
+		.codigo = 43775,
 		.nome = "Luz da Cozinha",
 		.codigoComodo = 2,
 		.ip = "192.168.0.12",
-		.tipo = tipoSensorLampada
+		.tipo = tipoSensorLampada,
+		.index = 3
 	});
 }

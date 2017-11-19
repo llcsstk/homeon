@@ -1,9 +1,12 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#pragma once
+#ifndef S_PACKET
+#define S_PACKET
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#include "CSClientConnectionInfo.h"
 
 class Packet
 {

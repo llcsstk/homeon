@@ -1,5 +1,7 @@
 #include "src/headers/mweb/WebRouter.h"
 
+#include "src/headers/networking/Server.h"
+
 #include "src/headers/controls/UsuarioControl.h"
 #include "src/headers/controls/SensorControl.h"
 #include "src/headers/controls/ComodoControl.h"
@@ -9,6 +11,8 @@
 #include "src/headers/sensores/SensorManager.h"
 
 #include "src/headers/json/serializer/SensorSerializer.h"
+
+#include "src/headers/database/datasheet.h"
 
 #include <thread>
 
@@ -25,6 +29,8 @@ void WebRouter::start_app()
 	RegisterSensorRoute();
 	RegisterActualHumidity();
 	RegisterActualTemperature();
+	RegisterLightSwitch();
+	RegisterActualUSolo();
 	RegisterSensorAction();
 	RegisterComodosRoute();
 	RegisterSensorPorComodoRoute();
@@ -50,7 +56,11 @@ void WebRouter::RegisterActualTemperature()
 	CROW_ROUTE(app, "/temperaturaAtual")
     ([&](const crow::request&, crow::response& response_) 
 	{
-		response_.write("{\n	\"temperatura\":\"15\"\n}");
+		std::string result = "{\n	\"temperatura\":\"";
+		result = result + std::to_string(DATA_SHEET::GetDataSheet()->temp);
+		result = result + "\"\n}";
+		
+		response_.write(result.c_str());
 		WebRouter::SignResponse(&response_);
 	});
 }
@@ -60,7 +70,25 @@ void WebRouter::RegisterActualHumidity()
 	CROW_ROUTE(app, "/umidadeAtual")
     ([&](const crow::request&, crow::response& response_) 
 	{
-		response_.write("{\n	\"umidade\":\"15\"\n}");
+		std::string result = "{\n	\"umidade\":\"";
+		result = result + std::to_string(DATA_SHEET::GetDataSheet()->humidity);
+		result = result + "\"\n}";
+		
+		response_.write(result.c_str());
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterActualUSolo()
+{
+	CROW_ROUTE(app, "/umidadeSoloAtual")
+    ([&](const crow::request&, crow::response& response_) 
+	{
+		std::string result = "{\n	\"umidadeSolo\":\"";
+		result = result + std::to_string(DATA_SHEET::GetDataSheet()->usolo);
+		result = result + "\"\n}";
+		
+		response_.write(result.c_str());
 		WebRouter::SignResponse(&response_);
 	});
 }
@@ -136,6 +164,19 @@ void WebRouter::RegisterSensorPorComodoRoute()
     ([&](const crow::request&, crow::response& response_, int comodo) 
 	{
 		SensorControl::GetControl()->ListarPorCodigoComodo(&response_, comodo);
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterLightSwitch()
+{
+	CROW_ROUTE(app, "/lightswitch/<int>/<int>")
+    ([&](const crow::request&, crow::response& response_, int sensorid, int index) 
+	{
+		ClientManager::GetManager()->GetClient(sensorid)->SendSwitchLight(index);
+		
+		response_ = crow::response(200);
+		
 		WebRouter::SignResponse(&response_);
 	});
 }
