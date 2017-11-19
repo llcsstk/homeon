@@ -51,7 +51,7 @@ void CSClient::StartRead()
 		 if ((boost::asio::error::eof == ec) ||
 			(boost::asio::error::connection_reset == ec))
 		{
-			std::cout << "Error reading data; Code: " << ec << std::endl;
+			//std::cout << "Error reading data; Code: " << ec << std::endl;
 			CSClient::CloseClient();
 		}
 		else
@@ -88,6 +88,8 @@ void CSClient::SendPing()
 {
 	if(!isActive)
 		return;
+		
+	CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
 
 	auto self(shared_from_this());
 	
@@ -100,7 +102,7 @@ void CSClient::SendPing()
 	{
 		if (!ec)
 		{
-			//CLogger::GetLogger()->Log("Sending Ping Packet with %d bytes", transmited);
+			CLogger::GetLogger()->Log("Ping Packet sent with %d bytes", transmited);
 		}
 		else
 		{
