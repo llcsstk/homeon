@@ -203,7 +203,7 @@ void CSClient::HandlePacket(std::array<char, 1024> packet)
 		break;
 		case PING_PACKET:
 		{
-			input_deadline_.expires_from_now(boost::posix_time::seconds(10));
+			input_deadline_.expires_from_now(boost::posix_time::seconds(7));
 		}
 		break;
 		case TEMP_HUMIDITY_PACKET:
