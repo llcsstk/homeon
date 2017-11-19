@@ -18,7 +18,7 @@ CSClient::CSClient(tcp::socket socket)
 	
 	isActive = true;
 
-	input_deadline_.expires_at(boost::posix_time::pos_infin);
+	//input_deadline_.expires_at(boost::posix_time::pos_infin);
 }
 
 uint16_t CSClient::GetClientId()
@@ -28,7 +28,7 @@ uint16_t CSClient::GetClientId()
 
 void CSClient::Start()
 {
-	CSClient::ping_thread.detach();
+	//CSClient::ping_thread.detach();
 
 	CSClient::StartRead();
 	
@@ -85,8 +85,8 @@ void CSClient::SendWelcome()
 
 void CSClient::SendPing()
 {
-	if(!isActive)
-		return;
+	//if(!isActive)
+		//return;
 		
 	CLogger::GetLogger()->Log("Sending Ping Packet");
 
