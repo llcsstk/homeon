@@ -41,7 +41,7 @@ void CSClient::StartRead()
 {
 	auto self(shared_from_this());
 	
-	input_deadline_.expires_from_now(boost::posix_time::seconds(5));
+	input_deadline_.expires_from_now(boost::posix_time::seconds(10));
 	
 	boost::asio::async_read(socket_,
 	boost::asio::buffer(recv_buffer),
@@ -89,7 +89,7 @@ void CSClient::SendPing()
 	if(!isActive)
 		return;
 		
-	CLogger::GetLogger()->Log("Sending Ping Packet");
+	//CLogger::GetLogger()->Log("Sending Ping Packet");
 
 	auto self(shared_from_this());
 	
@@ -102,7 +102,7 @@ void CSClient::SendPing()
 	{
 		if (!ec)
 		{
-			CLogger::GetLogger()->Log("Ping Packet sent with %d bytes", transmited);
+			//CLogger::GetLogger()->Log("Ping Packet sent with %d bytes", transmited);
 		}
 		else
 		{
