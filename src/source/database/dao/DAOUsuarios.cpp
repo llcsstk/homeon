@@ -29,6 +29,11 @@ Usuario* DAOUsuario::Login(std::string login, std::string passwd)
 	return NULL;
 }
 
+std::vector<Usuario*> DAOUsuario::GetUsuarios()
+{
+	return mockUsuarios;
+}
+
 void DAOUsuario::InicializaMock()
 {
 	mockUsuarios.push_back(new Usuario

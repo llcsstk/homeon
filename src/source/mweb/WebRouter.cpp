@@ -32,6 +32,7 @@ void WebRouter::start_app()
 	RegisterLightSwitch();
 	RegisterActualUSolo();
 	RegisterSensorAction();
+	RegisterUsuariosRoute();
 	RegisterComodosRoute();
 	RegisterSensorPorComodoRoute();
 	
@@ -154,6 +155,16 @@ void WebRouter::RegisterComodosRoute()
     ([&](const crow::request&, crow::response& response_) 
 	{
 		ComodoControl::GetControl()->ListarTodos(&response_);
+		WebRouter::SignResponse(&response_);
+	});
+}
+
+void WebRouter::RegisterUsuariosRoute()
+{
+	CROW_ROUTE(app, "/usuarios")
+    ([&](const crow::request&, crow::response& response_) 
+	{
+		UsuarioControl::GetControl()->ListarTodos(&response_);
 		WebRouter::SignResponse(&response_);
 	});
 }

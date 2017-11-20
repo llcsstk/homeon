@@ -22,6 +22,7 @@ class DAOUsuario
 public:
 	static DAOUsuario* GetDAO();
 	Usuario* Login(std::string login, std::string passwd);
+	std::vector<Usuario*> GetUsuarios();
 private:
 	static DAOUsuario* m_This;
 	static std::vector<Usuario*> mockUsuarios;

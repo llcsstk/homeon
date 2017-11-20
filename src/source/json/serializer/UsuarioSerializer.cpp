@@ -23,3 +23,13 @@ void UsuarioSerializer::serialize(json::Writer<json::StringBuffer>* writer, Usua
 	writer->String(usr->perfil.c_str());
 	writer->EndObject();
 }
+
+void UsuarioSerializer::serializeUsuarioList(json::Writer<json::StringBuffer>* writer, std::vector<Usuario*> usuarios)
+{
+	writer->StartArray();
+	
+	for(auto const& usuario: usuarios) 
+		serialize(writer, (Usuario*) usuario);
+		
+	writer->EndArray();
+}

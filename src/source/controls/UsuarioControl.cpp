@@ -13,6 +13,15 @@ UsuarioControl* UsuarioControl::GetControl()
 	return m_This;
 }
 
+void UsuarioControl::ListarTodos(crow::response* response_)
+{
+	json::StringBuffer buffer;
+	json::PrettyWriter<json::StringBuffer> writer(buffer);
+	
+	UsuarioSerializer::GetSerializer()->serializeUsuarioList(&writer, DAOUsuario::GetDAO()->GetUsuarios());
+	response_->write(buffer.GetString());
+}
+
 void UsuarioControl::Login(const crow::request* req, crow::response* response_)
 {
 		auto x = crow::json::load(req->body);

@@ -18,6 +18,7 @@ private:
 	void RegisterLightSwitch();
 	void RegisterActualUSolo();
 	void RegisterComodosRoute();
+	void RegisterUsuariosRoute();
 	void RegisterSensorPorComodoRoute();
 	void SignResponse(crow::response* response_);
 public:
